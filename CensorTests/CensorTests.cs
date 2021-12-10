@@ -12,6 +12,30 @@ namespace CensorTests {
     // Da usare come stub invece di Moq
     // oppure come mock per behavior test in cui
     // si verifica che ogni elemento sia letto una sola volta
+    [TestFixture]
+    public class MoqTest{
+        [Test]
+        public void A(){
+            var currentString = "pippo";
+            var length = 5;
+            var step = 0;
+            var current = new Mock<I>();
+            current.Setup(x => x.Message).Returns(()=>currentString);
+            var cursor = new Mock<IEnumerator<I>>();
+            cursor.Setup(x => x.Current).Returns(current.Object);
+            cursor.Setup(x => x.MoveNext()).Returns(()=>step<length).Callback(() => { currentString += "X";
+                step++;
+            });
+            var sequence = new Mock<IEnumerable<I>>();
+            sequence.Setup(x => x.GetEnumerator()).Returns(cursor.Object);
+            foreach (var x in sequence.Object){
+                Console.WriteLine(x.Message);
+            }
+
+            var result = CensorClass.Censor(sequence.Object, "pluto");
+            Assert.That(result.Count()==length);
+        }
+    }
     internal class MyI : I{
         private readonly string _message;
 
